@@ -1,0 +1,9 @@
+cat > .gitignore << 'EOF'
+__pycache__/
+*.pt
+*.bin
+*.safetensors
+.cache/
+data/
+.env
+EOF
