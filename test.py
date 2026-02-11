@@ -10,7 +10,12 @@ class State(TypedDict):
     messages: List[dict]          # 简化：用 dict 存 role/content
     tool_result: Optional[str]    # 工具结果
 
-llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+llm = ChatOpenAI(model="Qwen/Qwen2.5-3B-Instruct",
+  base_url="http://127.0.0.1:8000/v1",
+  api_key="EMPTY",
+  model_kwargs={"tool_choice": "none"},
+  temperature=0.0
+)
 
 # --------- 2) 一个“工具”（普通 Python 函数即可）---------
 def fake_search_tool(query: str) -> str:

@@ -1,0 +1,102 @@
+# =========================
+# 基础运行配置
+# =========================
+project:
+  name: student_behavior_agent
+  run_id: auto          # auto / uuid / timestamp
+  workspace: ./outputs  # 所有产物根目录
+
+# =========================
+# LLM 配置（对齐 OpenManus llm.py）
+# =========================
+llm:
+  provider: vllm        # openai / vllm / ollama / azure
+  model: Qwen2.5-32B-Instruct
+  base_url: http://127.0.0.1:8000/v1
+  api_key: EMPTY
+
+  generation:
+    temperature: 0.2
+    top_p: 0.9
+    max_tokens: 4096
+
+  tool_call:
+    enabled: true
+    mode: strict        # strict / auto
+    max_calls_per_turn: 5
+
+# =========================
+# Agent 行为约束
+# =========================
+agent:
+  name: behavior_analyst
+  max_turns: 20               # 防止无限循环
+  stop_on_report_generated: true
+  memory:
+    type: buffer              # buffer / summary / none
+    max_messages: 30
+
+# =========================
+# Flow（对应 app/flow）
+# =========================
+flow:
+  type: linear                # linear / graph
+  steps:
+    - load_data
+    - analyze_behavior
+    - write_logs
+    - generate_report
+
+# =========================
+# Tool 配置（对齐 app/tool）
+# =========================
+tools:
+  load_data:
+    enabled: true
+    input_dir: data/raw
+    supported_formats: [csv, json]
+
+  analyze_behavior:
+    enabled: true
+    anomaly_detection:
+      method: zscore
+      threshold: 3.0
+    aggregation:
+      time_window: daily
+
+  log_writer:
+    enabled: true
+    format: json
+    output_dir: outputs/logs
+
+  report_writer:
+    enabled: true
+    format: markdown
+    output_dir: outputs/reports
+
+# =========================
+# Schema 约束（非常重要）
+# =========================
+schema:
+  enforce: true               # 是否强制结构化输出
+  behavior_event: app.schema.behavior_event
+  log: app.schema.log_schema
+  report: app.schema.report_schema
+
+# =========================
+# Sandbox（对齐 OpenManus sandbox）
+# =========================
+sandbox:
+  enabled: true
+  allow_shell: false
+  allow_file_write: true
+  max_file_size_mb: 10
+  timeout_seconds: 60
+
+# =========================
+# 日志与调试
+# =========================
+logging:
+  level: INFO
+  save_to_file: true
+  log_dir: outputs/runtime_logs

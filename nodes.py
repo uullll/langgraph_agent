@@ -7,14 +7,15 @@ from langchain_openai import ChatOpenAI
 from state import State
 from prompts import *
 from tools import *
+import os
 
 os.environ["no_proxy"] = "localhost,127.0.0.1"
 llm = ChatOpenAI(
-  model="Qwen/Qwen2.5-VL-7B-Instruct-AWQ",
+  model="Qwen/Qwen2.5-3B-Instruct",
   base_url="http://127.0.0.1:8000/v1",
   api_key="EMPTY",
-  model_kwargs={"tool_choice": "none"},
-  temperature=0.0
+  temperature=0.0,
+  request_timeout=60
 )
 
 logger = logging.getLogger(__name__)
@@ -39,6 +40,20 @@ def extract_answer(text):
     
     return text
 
+def normalize_tool_call(tool_call: dict):
+    """Normalize tool call fields from different providers/casings."""
+    if tool_call is None:
+        return None, None, None
+    name = tool_call.get('name') or tool_call.get('Name') or tool_call.get('tool_name')
+    args = tool_call.get('args') or tool_call.get('arguments') or tool_call.get('tool_args')
+    tool_id = tool_call.get('id') or tool_call.get('tool_call_id')
+    if isinstance(args, str):
+        try:
+            args = json.loads(args)
+        except Exception:
+            pass
+    return name, args, tool_id
+
 def create_planner_node(state: State):
     
     logger.info("***正在运行Create Planner node***")
@@ -48,7 +63,6 @@ def create_planner_node(state: State):
     response = response.model_dump_json(indent=4, exclude_none=True)
     response = json.loads(response)
     raw = extract_json(extract_answer(response["content"]))
-    print(raw)
     plan = json.loads(extract_json(extract_answer(response['content'])))
     state['messages'] += [AIMessage(content=json.dumps(plan, ensure_ascii=False))]
     return Command(goto="execute", update={"plan": plan})
@@ -83,8 +97,7 @@ def update_planner_node(state: State):
         except Exception as e:
             logger.error(f"Update planner 解析失败")
             snippet = (last_text or "")[:1500]
-            node_context.append
-            (HumanMessage(
+            node_context.append(HumanMessage(
                 content=(
                     "上次输出无法解析为严格 JSON。请只返回一个合法 JSON，不要任何额外文字。\n"
                     f"错误信息: {type(e).__name__}: {e}\n"
@@ -128,9 +141,10 @@ def execute_node(state: State):
                 }     
         if response.tool_calls:
             for tool_call in response.tool_calls:
-                tool_name = tool_call['name']
-                tool_args = tool_call['args']
-                tool_id   = tool_call["id"]
+                tool_name, tool_args, tool_id = normalize_tool_call(tool_call)
+                if not tool_name:
+                    logger.warning(f"工具调用缺少名称，原始数据: {tool_call}")
+                    continue
                 tool_result = tools[tool_name].invoke(tool_args)
                 logger.info(f"tool_name:{tool_name},tool_args:{tool_args}\ntool_result:{tool_result}")
                 messages.append(
@@ -139,11 +153,14 @@ def execute_node(state: State):
                         tool_call_id=tool_id
                     )
                 )
+            steps[current_step_index]['status'] = 'completed'
             continue
         else:    
             break
         
     logger.info(f"当前STEP执行总结:{extract_answer(response.content)}")
+    # Mark current step as completed to avoid re-running it
+    
     state['messages'] += [AIMessage(content=extract_answer(response.content))]
     state['observations'] += [AIMessage(content=extract_answer(response.content))]
     return Command(goto='update_planner', update={'plan': plan})
@@ -167,21 +184,17 @@ def report_node(state: State):
                  "shell_exec": shell_exec}     
         if response.tool_calls:
             for tool_call in response.tool_calls:
-                tool_name = tool_call['name']
-                tool_args = tool_call['args']
-                tool_id   = tool_call["id"]
+                tool_name, tool_args, tool_id = normalize_tool_call(tool_call)
+                if not tool_name:
+                    logger.warning(f"工具调用缺少名称，原始数据: {tool_call}")
+                    continue
                 tool_result = tools[tool_name].invoke(tool_args)
                 logger.info(f"tool_name:{tool_name},tool_args:{tool_args}\ntool_result:{tool_result}")
-                messages.append(
-                    ToolMessage(
-                        content=json.dumps(tool_result,ensure_ascii=False),
-                        tool_call_id=tool_id
-                    )
-                )
+                messages += [AIMessage(content=extract_answer(response['content']))]
+                messages += [ToolMessage(content=f"tool_name:{tool_name},tool_args:{tool_args}\ntool_result:{tool_result}", tool_call_id=tool_call['id'])]
+                
             continue
         else:
             break
             
-    return {"final_report": response['content']}
-
-
+    return {"final_report": response.content}
