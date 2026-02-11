@@ -61,11 +61,14 @@ def update_planner_node(state: State):
         SystemMessage(content=PLAN_SYSTEM_PROMPT),
         HumanMessage(content=UPDATE_PLAN_PROMPT.format(plan=plan, goal=goal))
     ]
+    last_text = None
     for _ in range(5):
+        response = None
         try:
             config = {"recursion_limit": 200}
             response = llm.invoke(node_context,config=config)
             content = response.content if hasattr(response, 'content') else str(response)
+            last_text=content
             cleaned_json_str = extract_json(extract_answer(content))
             new_plan = json.loads(cleaned_json_str)
             final_ai_message = AIMessage(content=json.dumps(new_plan, ensure_ascii=False))
@@ -78,10 +81,16 @@ def update_planner_node(state: State):
                 }
             )
         except Exception as e:
-            raw_content = response.get('content', '')
-            logger.error(f"解析失败！原始输出内容:\n{raw_content}") 
-            logger.error(f"报错详情: {e}")
-            messages += [HumanMessage(content=f"json格式错误:{e}")]
+            logger.error(f"Update planner 解析失败")
+            snippet = (last_text or "")[:1500]
+            node_context.append
+            (HumanMessage(
+                content=(
+                    "上次输出无法解析为严格 JSON。请只返回一个合法 JSON，不要任何额外文字。\n"
+                    f"错误信息: {type(e).__name__}: {e}\n"
+                    f"上次输出片段:\n{snippet}"
+                )
+            ))
             
 def execute_node(state: State):
     logger.info("***正在运行execute_node***")
