@@ -79,29 +79,29 @@ def send_message(message: str):
 @tool
 def shell_exec(command: str) -> dict:
     """
-    在指定的 shell 会话中执行命令。
+    Execute a shell command in the current working directory.
 
-    参数:
-        command (str): 要执行的 shell 命令
+    Args:
+        command (str): Shell command to execute.
 
-    返回:
-        dict: 包含以下字段：
-            - stdout: 命令的标准输出
-            - stderr: 命令的标准错误
+    Returns:
+        dict: Contains:
+            - stdout: standard output
+            - stderr: standard error
     """
   
     try:
-        # 执行命令
+        # Execute command
         result = subprocess.run(
             command,
             shell=True,          
-            cwd=os.getcwd(),        
+            cwd=WORKSPACE,        
             capture_output=True,
             text=True,    
             check=False
         )
 
-        # 返回结果
+        # Return results
         return {"message":{"stdout": result.stdout,"stderr": result.stderr}}
 
     except Exception as e:

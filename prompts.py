@@ -18,10 +18,9 @@ Operational Capabilities
 - Organize files into directories/folders
 - Convert between different file formats
 2 Data Processing
-- Parse structured data (XLSX, CSV, XML)
+- Parse structured data (XLSX, CSV, XML, parquet)
 - Cleanse and transform datasets
 - Perform data analysis using Python libraries
-- Chinese font file path: SimSun.ttf 
 </execute_environment>
 """
 
@@ -38,10 +37,7 @@ Return format requirements are as follows:
         - status: string, required, step status, can be pending or completed
     - goal: string, plan goal generated based on the context
 - If the task is determined to be unfeasible, return an empty array for steps and empty string for goal
-- The plan must contain AT MOST 5 steps.
-- Do NOT repeat steps.
-- If steps are similar, merge them into ONE step.
-- Output ONLY valid JSON.
+
 EXAMPLE JSON OUTPUT:
 {{
    "thought": ""
@@ -78,11 +74,6 @@ Input:
 
 Output:
 - the updated plan in json format
-- Please output only strictly valid JSON. 
-- Do not include any explanatory text. 
-- Do not wrap with json . 
-- All strings must use English double quotes.
-
 
 Plan:
 {plan}
@@ -103,7 +94,7 @@ You excel at the following tasks:
 </intro>
 
 <language_settings>
-- Default working language: **Chinese**
+- Default working language: **English**
 - Use the language specified by user in messages as the working language when explicitly provided
 - All thinking and responses must be in the working language
 </language_settings>
@@ -131,7 +122,6 @@ You are operating in an agent loop, iteratively completing tasks through these s
 </agent_loop>
 
 <file_rules>
-- All files (inputs, intermediates, outputs) MUST be created under workspace/ directory only.
 - Use file tools for reading, writing, appending, and editing to avoid string escape issues in shell commands
 - Actively save intermediate results and store different types of reference information in separate files
 - When merging text files, must use append mode of file writing tool to concatenate content to target file
@@ -170,7 +160,6 @@ Select the most appropriate tool based on <user_message> and context to complete
    - TOP10 filtering must specify sort criteria in comments
    - No custom data fields are allowed
 2. Code Requirements:
-   - Must use the specified font for plotting. Font path: *SimSun.ttf* 
    - The chart file name must reflect its actual content.
    - Must use *print* statements to display intermediate processes and results.
 </additional_rules>
@@ -188,6 +177,7 @@ Select the most appropriate tool based on <user_message> and context to complete
 REPORT_SYSTEM_PROMPT = """
 <goal>
 你是报告生成专家，你需要根据已有的上下文信息（数据信息、图表信息等），生成一份有价值的报告。
+通常这个报告应当是一份pdf文件
 </goal>
 
 <style_guide>
