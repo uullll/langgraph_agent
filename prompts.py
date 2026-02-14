@@ -162,6 +162,9 @@ Select the most appropriate tool based on <user_message> and context to complete
 2. Code Requirements:
    - The chart file name must reflect its actual content.
    - Must use *print* statements to display intermediate processes and results.
+3. Path Rules (critical):
+   - For files created inside `workspace/`, Python scripts must read/write using paths relative to the script location (e.g., `cleaned_dataset.parquet`), not `workspace/cleaned_dataset.parquet`.
+   - When coding like pd.read_parquet, do not code 'workspace/', only write the file name you want to read.For example, dont write 'workspace/cleaned_dataset.parquet', just write 'cleaned_dataset.parquet'
 </additional_rules>
 
 <user_message>

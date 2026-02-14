@@ -10,6 +10,8 @@ from state import State
 from prompts import *
 from tools import *
 import os
+WORKSPACE = (Path(__file__).resolve().parent / "workspace").resolve()
+WORKSPACE.mkdir(parents=True, exist_ok=True)
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
@@ -33,7 +35,16 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 hander.setFormatter(formatter)
 logger.addHandler(hander)
 
+def load_hf_dataset_once(state: State):
+    if state.get("file_path"):
+        return state["file_path"]
 
+    ds = load_hf_dataset.invoke({})
+    save_dataset.invoke({"ds": ds})
+    save_path = WORKSPACE / "dataset.parquet"
+
+    state["file_path"] = str(save_path)
+    return str(save_path)
 def _build_pdf_report(report_text: str, workspace: Path) -> dict:
     """Build a PDF report from final text and all images under workspace/."""
     try:
@@ -41,6 +52,7 @@ def _build_pdf_report(report_text: str, workspace: Path) -> dict:
         from matplotlib.backends.backend_pdf import PdfPages
     except Exception as e:
         return {"ok": False, "error": f"matplotlib unavailable: {e}"}
+
 
     workspace.mkdir(parents=True, exist_ok=True)
     pdf_path = workspace / "analysis_report.pdf"
@@ -105,7 +117,8 @@ def normalize_tool_call(tool_call: dict):
     return name, args, tool_id
 
 def create_planner_node(state: State):
-    
+    logger.info("***正在下载数据集***")
+    load_hf_dataset_once(state)
     logger.info("***正在运行Create Planner node***")
     messages = [SystemMessage(content=PLAN_SYSTEM_PROMPT), 
                 HumanMessage(content=PLAN_CREATE_PROMPT.format(user_message = state['user_message']))]
@@ -219,8 +232,18 @@ def report_node(state: State):
     """Report node that write a final report."""
     logger.info("***正在运行report_node***")
     
-    observations = state.get("observations")
-    messages = observations + [SystemMessage(content=REPORT_SYSTEM_PROMPT)]
+    observations = state.get("observations") or []
+    user_message = state.get("user_message", "")
+    messages = observations + [
+        SystemMessage(content=REPORT_SYSTEM_PROMPT),
+        HumanMessage(
+            content=(
+                "请严格围绕用户原始需求生成最终报告正文，"
+                "并先输出可直接渲染为报告的完整文本内容（不要输出工具调用说明）。\n\n"
+                f"用户原始需求：{user_message}"
+            )
+        )
+    ]
     
     while True:
         response = llm.bind_tools([create_file, str_replace, shell_exec]).invoke(messages)
@@ -247,6 +270,17 @@ def report_node(state: State):
         else:
             break
 
+    final_text = extract_answer(response.content)
+    pdf_result = _build_pdf_report(final_text, WORKSPACE)
+
+    if pdf_result.get("ok"):
+        final_text += (
+            "\n\n"
+            f"[PDF generated] path={pdf_result['pdf_path']}, "
+            f"images_embedded={pdf_result['images_embedded']}"
+        )
+    else:
+        final_text += f"\n\n[PDF generation failed] reason={pdf_result.get('error', 'unknown error')}"
     return {
-        "final_report": response.content
+        "final_report": final_text
     }

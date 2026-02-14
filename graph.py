@@ -38,7 +38,7 @@ def build_graph():
 graph = build_graph()
 
 
-inputs = {"user_message": "对所给文档进行分析，生成分析报告，文档路径为train-00000-of-00001.parquet", 
+inputs = {"user_message": "对所给文档进行分析，生成分析报告,文档名称为dataset.parquet", 
           "plan": None,
           "observations": [], 
           "final_report": ""}

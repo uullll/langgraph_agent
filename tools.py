@@ -1,10 +1,70 @@
 from langchain_core.tools import tool
+import textwrap
 from datasets import load_dataset
 from pathlib import Path
 import os
 import traceback
 import subprocess
-WORKSPACE = Path("workspace")
+from datasets import load_dataset
+from datetime import datetime, timezone
+import uuid
+BASE_DIR = Path(__file__).resolve().parent
+WORKSPACE = BASE_DIR / "workspace"
+
+SHELL_EXEC_MAX_OUTPUT_CHARS = int(os.getenv("SHELL_EXEC_MAX_OUTPUT_CHARS", "1000"))
+
+
+def _truncate_output(text: str, max_chars: int) -> tuple[str, bool]:
+    if text is None:
+        return "", False
+    if len(text) <= max_chars:
+        return text, False
+    head = max_chars // 2
+    tail = max_chars - head
+    truncated = (
+        text[:head]
+        + f"\n... [truncated {len(text) - max_chars} chars] ...\n"
+        + text[-tail:]
+    )
+    return truncated, True
+
+
+def _write_shell_exec_log(command: str, stdout: str, stderr: str, return_code: int) -> str:
+    logs_dir = WORKSPACE / "tool_logs"
+    logs_dir.mkdir(parents=True, exist_ok=True)
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    log_path = logs_dir / f"shell_exec_{stamp}_{uuid.uuid4().hex[:8]}.log"
+    content = (
+        f"$ {command}\n"
+        f"exit_code: {return_code}\n"
+        "\n===== STDOUT =====\n"
+        f"{stdout or ''}\n"
+        "\n===== STDERR =====\n"
+        f"{stderr or ''}\n"
+    )
+    log_path.write_text(content, encoding="utf-8")
+    return str(log_path)
+@tool
+def load_hf_dataset():
+    """Download the dataset from Huggingface"""
+    dataset_name = os.getenv("HF_DATASET")
+    dataset_config = os.getenv("HF_DATASET_CONFIG")
+    split = os.getenv("HF_SPLIT", "train")
+
+    if dataset_config:
+        ds = load_dataset(dataset_name, dataset_config, split=split)
+    else:
+        ds = load_dataset(dataset_name, split=split)
+
+    return ds
+@tool
+def save_dataset(ds):
+    """Save the dataset to specific file path"""
+    save_path = WORKSPACE / "dataset.parquet"
+    ds.to_parquet(str(save_path))
+
+def clean_code(code: str) -> str:
+    return textwrap.dedent(code).lstrip()
 @tool
 def create_file(file_name, file_contents):
     """
@@ -22,7 +82,7 @@ def create_file(file_name, file_contents):
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
         with open(file_path, "w", encoding="utf-8") as f:
-            f.write(file_contents)
+            f.write(clean_code(file_contents))
 
         return {
             "message": f"Successfully created file at {file_path}"
@@ -95,17 +155,37 @@ def shell_exec(command: str) -> dict:
         result = subprocess.run(
             command,
             shell=True,          
-            cwd=WORKSPACE,        
+            cwd=WORKSPACE,          
             capture_output=True,
             text=True,    
             check=False
         )
 
         # Return results
-        return {"message":{"stdout": result.stdout,"stderr": result.stderr}}
+        log_path = _write_shell_exec_log(
+            command=command,
+            stdout=result.stdout,
+            stderr=result.stderr,
+            return_code=result.returncode,
+        )
+
+        stdout_preview, stdout_truncated = _truncate_output(result.stdout, SHELL_EXEC_MAX_OUTPUT_CHARS)
+        stderr_preview, stderr_truncated = _truncate_output(result.stderr, SHELL_EXEC_MAX_OUTPUT_CHARS)
+
+        # Return bounded results for ToolMessage to avoid oversized context payloads.
+        return {
+            "message": {
+                "stdout": stdout_preview,
+                "stderr": stderr_preview,
+                "exit_code": result.returncode,
+                "stdout_truncated": stdout_truncated,
+                "stderr_truncated": stderr_truncated,
+                "full_output_log": log_path,
+            }
+        }
 
     except Exception as e:
-        return {"error":{"stderr": str(e)}}
+        return {"error":{"stderr": str(e), "type": type(e).__name__}}
     
 @tool
 def load_student_dataset() -> dict:
