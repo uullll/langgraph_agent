@@ -8,11 +8,16 @@ import subprocess
 from datasets import load_dataset
 from datetime import datetime, timezone
 import uuid
-BASE_DIR = Path(__file__).resolve().parent
-WORKSPACE = BASE_DIR / "workspace"
+from config import WORKSPACE
+
 
 SHELL_EXEC_MAX_OUTPUT_CHARS = int(os.getenv("SHELL_EXEC_MAX_OUTPUT_CHARS", "1000"))
-
+def _safe_path(rel_path: str) -> Path:
+    # 禁止 ../ 越狱
+    p = (WORKSPACE / rel_path).resolve()
+    if not str(p).startswith(str(WORKSPACE.resolve())):
+        raise ValueError(f"Path escape blocked: {rel_path}")
+    return p
 
 def _truncate_output(text: str, max_chars: int) -> tuple[str, bool]:
     if text is None:
