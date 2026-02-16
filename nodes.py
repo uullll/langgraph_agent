@@ -235,14 +235,7 @@ def report_node(state: State):
     observations = state.get("observations") or []
     user_message = state.get("user_message", "")
     messages = observations + [
-        SystemMessage(content=REPORT_SYSTEM_PROMPT),
-        HumanMessage(
-            content=(
-                "请严格围绕用户原始需求生成最终报告正文，"
-                "并先输出可直接渲染为报告的完整文本内容（不要输出工具调用说明）。\n\n"
-                f"用户原始需求：{user_message}"
-            )
-        )
+        SystemMessage(content=REPORT_SYSTEM_PROMPT)
     ]
     
     while True:
@@ -270,17 +263,7 @@ def report_node(state: State):
         else:
             break
 
-    final_text = extract_answer(response.content)
-    pdf_result = _build_pdf_report(final_text, WORKSPACE)
-
-    if pdf_result.get("ok"):
-        final_text += (
-            "\n\n"
-            f"[PDF generated] path={pdf_result['pdf_path']}, "
-            f"images_embedded={pdf_result['images_embedded']}"
-        )
-    else:
-        final_text += f"\n\n[PDF generation failed] reason={pdf_result.get('error', 'unknown error')}"
+    
     return {
-        "final_report": final_text
+        "final_report": response.content
     }

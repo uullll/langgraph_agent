@@ -82,9 +82,8 @@ def create_file(file_name, file_contents):
     try:
         WORKSPACE.mkdir(exist_ok=True)
 
-        save_path = os.path.basename(file_name)
-        file_path = WORKSPACE /save_path
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        file_path = _safe_path(file_name)
+        file_path.parent.mkdir(parents=True, exist_ok=True)
 
         with open(file_path, "w", encoding="utf-8") as f:
             f.write(clean_code(file_contents))
@@ -110,8 +109,7 @@ def str_replace(file_name, old_str, new_str):
     """
     try:
         WORKSPACE.mkdir(exist_ok=True)
-        safe_name = os.path.basename(file_name)
-        file_path = WORKSPACE / safe_name
+        file_path = _safe_path(file_name)
         if not file_path.exists():
             return {"error": f"File not found: {file_path}"}
         with open(file_path, "r", encoding="utf-8") as f:
@@ -126,7 +124,7 @@ def str_replace(file_name, old_str, new_str):
         with open(file_path, "w", encoding="utf-8") as f:
             f.write(new_content)
 
-        return {"message": "Successfully replaced '{old_str}' with '{new_str}' in {file_path}"}
+        return {"message": f"Successfully replaced '{old_str}' with '{new_str}' in {file_path}"}
     except Exception as e:
         return {"error": f"Error replacing '{old_str}' with '{new_str}' in {file_path}: {str(e)}"}
 
