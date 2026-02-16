@@ -237,8 +237,10 @@ def report_node(state: State):
     messages = observations + [
         SystemMessage(content=REPORT_SYSTEM_PROMPT)
     ]
-    
-    while True:
+    max_rounds = 8
+    rounds = 0
+    while rounds < max_rounds:
+        rounds += 1
         response = llm.bind_tools([create_file, str_replace, shell_exec]).invoke(messages)
         messages.append(response)
         tools = {"create_file": create_file, 
@@ -261,9 +263,25 @@ def report_node(state: State):
                 
             continue
         else:
+            pdf_files = sorted(WORKSPACE.glob("*.pdf"))
+            if not pdf_files:
+                logger.warning("No PDF generated yet in workspace, ask model to continue.")
+                messages.append(
+                    HumanMessage(
+                        content=(
+                            "You have not created any .pdf file under workspace yet. "
+                            "Please continue and create a real PDF file (not txt/md) in workspace, "
+                            "then briefly report the file path."
+                        )
+                    )
+                )
+                continue
             break
+        
 
-    
+    pdf_files = sorted(WORKSPACE.glob("*.pdf"))
+    pdf_path = str(pdf_files[-1]) if pdf_files else ""
     return {
-        "final_report": response.content
+        "final_report": response.content,
+        "final_report_pdf_path": pdf_path,
     }
