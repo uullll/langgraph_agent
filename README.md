@@ -1,1 +1,3 @@
 # langgraph_agent
+
+该项目为仿照openmanus的简单版本，使用langgraph，旨在分析数据集并生成pdf文件报告
