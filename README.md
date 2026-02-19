@@ -24,9 +24,9 @@ Generated report:
 workspace/student_analysis_report.pdf
 
 
-langgraph_agent/
-├── graph.py
-├── nodes.py
-├── tools/
-├── workspace/
-└── README.md
+langgraph_agent/  
+├── graph.py  
+├── nodes.py  
+├── tools/  
+├── workspace/  
+└── README.md  
