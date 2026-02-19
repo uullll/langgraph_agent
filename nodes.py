@@ -9,13 +9,11 @@ from langchain_openai import ChatOpenAI
 from state import State
 from prompts import *
 from tools import *
-import os
-WORKSPACE = (Path(__file__).resolve().parent / "workspace").resolve()
-WORKSPACE.mkdir(parents=True, exist_ok=True)
+from config import WORKSPACE, get_setting
+OPENAI_API_KEY = get_setting("OPENAI_API_KEY", "llm.api_key", required=True)
+OPENAI_MODEL = get_setting("OPENAI_MODEL", "llm.model", default="gpt-4o-mini")
+OPENAI_BASE_URL = get_setting("OPENAI_BASE_URL", "llm.base_url")
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
-OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL")
 if not OPENAI_API_KEY:
     raise ValueError("OPENAI_API_KEY is not set.")
 llm = ChatOpenAI(

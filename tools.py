@@ -8,12 +8,11 @@ import subprocess
 from datasets import load_dataset
 from datetime import datetime, timezone
 import uuid
-from config import WORKSPACE
+from config import WORKSPACE, get_setting
 
 
-SHELL_EXEC_MAX_OUTPUT_CHARS = int(os.getenv("SHELL_EXEC_MAX_OUTPUT_CHARS", "1000"))
+SHELL_EXEC_MAX_OUTPUT_CHARS = int(get_setting("SHELL_EXEC_MAX_OUTPUT_CHARS", "tools.shell_exec.max_output_chars", default=1000))
 def _safe_path(rel_path: str) -> Path:
-    # 禁止 ../ 越狱
     p = (WORKSPACE / rel_path).resolve()
     if not str(p).startswith(str(WORKSPACE.resolve())):
         raise ValueError(f"Path escape blocked: {rel_path}")
@@ -52,9 +51,9 @@ def _write_shell_exec_log(command: str, stdout: str, stderr: str, return_code: i
 @tool
 def load_hf_dataset():
     """Download the dataset from Huggingface"""
-    dataset_name = os.getenv("HF_DATASET")
-    dataset_config = os.getenv("HF_DATASET_CONFIG")
-    split = os.getenv("HF_SPLIT", "train")
+    dataset_name = get_setting("HF_DATASET", "tools.load_data.dataset", required=True)
+    dataset_config = get_setting("HF_DATASET_CONFIG", "tools.load_data.dataset_config")
+    split = get_setting("HF_SPLIT", "tools.load_data.split", default="train")
 
     if dataset_config:
         ds = load_dataset(dataset_name, dataset_config, split=split)

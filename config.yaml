@@ -1,12 +1,12 @@
 project:
   name: student_behavior_agent
   run_id: auto          # auto / uuid / timestamp
-  workspace: ./outputs  # 所有产物根目录
+  output_dir: ./outputs
   workspace: ./workspace
 
 llm:
   provider: vllm        # openai / vllm / ollama / azure
-  model: Qwen2.5-32B-Instruct
+  model: Qwen/Qwen3-4B
   base_url: http://127.0.0.1:8000/v1
   api_key: EMPTY
 
