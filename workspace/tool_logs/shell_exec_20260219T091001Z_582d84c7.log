@@ -1,0 +1,56 @@
+$ python data_analysis.py
+exit_code: 0
+
+===== STDOUT =====
+Missing values:
+ school        0
+sex           0
+age           0
+address       0
+famsize       0
+Pstatus       0
+Medu          0
+Fedu          0
+Mjob          0
+Fjob          0
+reason        0
+guardian      0
+traveltime    0
+studytime     0
+failures      0
+schoolsup     0
+famsup        0
+paid          0
+activities    0
+nursery       0
+higher        0
+internet      0
+romantic      0
+famrel        0
+freetime      0
+goout         0
+Dalc          0
+Walc          0
+health        0
+absences      0
+G1            0
+G2            0
+G3            0
+dtype: int64
+
+Top 10 students by G3:
+     school sex  age  G3
+636     MS   M   18  19
+338     GP   F   17  19
+606     MS   F   17  18
+594     MS   F   18  18
+332     GP   F   18  18
+113     GP   M   15  18
+327     GP   F   18  18
+509     MS   F   16  18
+596     MS   F   17  18
+617     MS   F   18  18
+
+
+===== STDERR =====
+

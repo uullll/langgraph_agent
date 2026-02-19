@@ -1,0 +1,12 @@
+$ python report_to_pdf.py
+exit_code: 1
+
+===== STDOUT =====
+
+
+===== STDERR =====
+Traceback (most recent call last):
+  File "/root/autodl-tmp/langgraph_agent/workspace/report_to_pdf.py", line 2, in <module>
+    from reportlab.lib.pagesizes import letter
+ModuleNotFoundError: No module named 'reportlab'
+

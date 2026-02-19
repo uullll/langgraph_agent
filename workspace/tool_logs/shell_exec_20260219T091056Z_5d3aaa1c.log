@@ -1,0 +1,126 @@
+$ python3 /root/autodl-tmp/langgraph_agent/workspace/analysis_script.py
+exit_code: 0
+
+===== STDOUT =====
+Dataset Shape: (649, 33)
+
+First 5 rows:
+  school sex  age address famsize Pstatus  ...  Walc  health absences  G1  G2  G3
+0     GP   F   18       U     GT3       A  ...     1       3        4   0  11  11
+1     GP   F   17       U     GT3       T  ...     1       3        2   9  11  11
+2     GP   F   15       U     LE3       T  ...     3       3        6  12  13  12
+3     GP   F   15       U     GT3       T  ...     1       5        0  14  14  14
+4     GP   F   16       U     GT3       T  ...     2       5        0  11  13  13
+
+[5 rows x 33 columns]
+
+Data Types:
+school          str
+sex             str
+age           int64
+address         str
+famsize         str
+Pstatus         str
+Medu          int64
+Fedu          int64
+Mjob            str
+Fjob            str
+reason          str
+guardian        str
+traveltime    int64
+studytime     int64
+failures      int64
+schoolsup       str
+famsup          str
+paid            str
+activities      str
+nursery         str
+higher          str
+internet        str
+romantic        str
+famrel        int64
+freetime      int64
+goout         int64
+Dalc          int64
+Walc          int64
+health        int64
+absences      int64
+G1            int64
+G2            int64
+G3            int64
+dtype: object
+
+Missing Values:
+school        0
+sex           0
+age           0
+address       0
+famsize       0
+Pstatus       0
+Medu          0
+Fedu          0
+Mjob          0
+Fjob          0
+reason        0
+guardian      0
+traveltime    0
+studytime     0
+failures      0
+schoolsup     0
+famsup        0
+paid          0
+activities    0
+nursery       0
+higher        0
+internet      0
+romantic      0
+famrel        0
+freetime      0
+goout         0
+Dalc          0
+Walc          0
+health        0
+absences      0
+G1            0
+G2            0
+G3            0
+dtype: int64
+
+Descriptive Statistics:
+              age        Medu        Fedu  ...          G1          G2          G3
+count  649.000000  649.000000  649.000000  ...  649.000000  649.000000  649.000000
+mean    16.744222    2.514638    2.306626  ...   11.399076   11.570108   11.906009
+std      1.218138    1.134552    1.099931  ...    2.745265    2.913639    3.230656
+min     15.000000    0.000000    0.000000  ...    0.000000    0.000000    0.000000
+25%     16.000000    2.000000    1.000000  ...   10.000000   10.000000   10.000000
+50%     17.000000    2.000000    2.000000  ...   11.000000   11.000000   12.000000
+75%     18.000000    4.000000    3.000000  ...   13.000000   13.000000   14.000000
+max     22.000000    4.000000    4.000000  ...   19.000000   19.000000   19.000000
+
+[8 rows x 16 columns]
+
+Top 10 Numerical Features:
+Index(['age', 'Medu', 'Fedu', 'traveltime', 'studytime', 'failures', 'famrel',
+       'freetime', 'goout', 'Dalc'],
+      dtype='str')
+
+Absences Analysis:
+count    649.000000
+mean       3.659476
+std        4.640759
+min        0.000000
+25%        0.000000
+50%        2.000000
+75%        6.000000
+max       32.000000
+Name: absences, dtype: float64
+
+Grade Correlation Analysis:
+          G1        G2        G3
+G1  1.000000  0.864982  0.826387
+G2  0.864982  1.000000  0.918548
+G3  0.826387  0.918548  1.000000
+
+
+===== STDERR =====
+
