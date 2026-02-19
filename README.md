@@ -1,3 +1,31 @@
-# langgraph_agent
+# LangGraph Agent
 
-该项目为仿照openmanus的简单版本，使用langgraph，旨在分析数据集并生成pdf文件报告
+A lightweight OpenManus-style agent built with LangGraph for automated dataset analysis and PDF report generation.
+
+## Model
+
+Qwen/Qwen3-14B-AWQ (served via vLLM)
+
+Start server:
+
+```bash
+vllm serve Qwen/Qwen3-14B-AWQ \
+  --host 0.0.0.0 \
+  --port 8000 \
+  --max-model-len 16384 \
+  --enable-auto-tool-choice \
+  --tool-call-parser hermes
+
+```bash
+python3 graph.py
+
+Generated report:
+workspace/student_analysis_report.pdf
+
+
+langgraph_agent/
+├── graph.py
+├── nodes.py
+├── tools/
+├── workspace/
+└── README.md
