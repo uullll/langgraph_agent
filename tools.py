@@ -8,7 +8,7 @@ import subprocess
 from datasets import load_dataset
 from datetime import datetime, timezone
 import uuid
-from config import WORKSPACE, get_setting
+from config import WORKSPACE, get_config, get_setting
 
 
 SHELL_EXEC_MAX_OUTPUT_CHARS = int(get_setting("SHELL_EXEC_MAX_OUTPUT_CHARS", "tools.shell_exec.max_output_chars", default=1000))
@@ -51,9 +51,22 @@ def _write_shell_exec_log(command: str, stdout: str, stderr: str, return_code: i
 @tool
 def load_hf_dataset():
     """Download the dataset from Huggingface"""
-    dataset_name = get_setting("HF_DATASET", "tools.load_data.dataset", required=True)
-    dataset_config = get_setting("HF_DATASET_CONFIG", "tools.load_data.dataset_config")
-    split = get_setting("HF_SPLIT", "tools.load_data.split", default="train")
+    dataset_name = get_setting(
+        "HF_DATASET",
+        "tools.load_data.dataset",
+        default=get_config("load_data.dataset"),
+        required=True,
+    )
+    dataset_config = get_setting(
+        "HF_DATASET_CONFIG",
+        "tools.load_data.dataset_config",
+        default=get_config("load_data.dataset_config"),
+    )
+    split = get_setting(
+        "HF_SPLIT",
+        "tools.load_data.split",
+        default=get_config("load_data.split", "train"),
+    )
 
     if dataset_config:
         ds = load_dataset(dataset_name, dataset_config, split=split)

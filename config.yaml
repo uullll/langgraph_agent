@@ -15,5 +15,5 @@ shell_exec:
 
 load_data:
   dataset: "riyadahmadov/StudentPerformance"
-  dataset_config: "3.0.0"
+  dataset_config: "default"
   split: "train[:1000]"
