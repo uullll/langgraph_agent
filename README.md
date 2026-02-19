@@ -26,7 +26,10 @@ workspace/student_analysis_report.pdf
 
 langgraph_agent/  
 ├── graph.py  
+├── config.yaml  
+├── config.py  
+├── state.py  
 ├── nodes.py  
-├── tools/  
-├── workspace/  
+├── tools  
+├── workspace  
 └── README.md  
