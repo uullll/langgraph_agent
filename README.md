@@ -16,9 +16,10 @@ vllm serve Qwen/Qwen3-14B-AWQ \
   --enable-auto-tool-choice \
   --tool-call-parser hermes
 ```
-Run
+Run:
+```bash
 python3 graph.py
-
+```
 Generated report:
 workspace/student_analysis_report.pdf
 
