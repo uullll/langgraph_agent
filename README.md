@@ -15,8 +15,8 @@ vllm serve Qwen/Qwen3-14B-AWQ \
   --max-model-len 16384 \
   --enable-auto-tool-choice \
   --tool-call-parser hermes
-
-```bash
+```
+Run
 python3 graph.py
 
 Generated report:
