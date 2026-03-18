@@ -6,4 +6,8 @@ __pycache__/
 .cache/
 data/
 .env
+workspace/
+config.yaml
+test.py
 EOF
+git

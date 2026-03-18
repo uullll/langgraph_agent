@@ -22,25 +22,27 @@ def _build_base_graph():
 
 
 def build_graph_with_memory():
-    """Build and return the agent workflow graph with memory."""
+    """Build and return the agent workflow graph with checkpoint memory."""
     memory = MemorySaver()
     builder = _build_base_graph()
     return builder.compile(checkpointer=memory)
 
 
 def build_graph():
-    """Build and return the agent workflow graph without memory."""
-    # build state graph
-    builder = _build_base_graph()
-    return builder.compile()
+    """Build and return the agent workflow graph. Defaults to memory-enabled graph."""
+    return build_graph_with_memory()
+
 
 
 graph = build_graph()
 
 
-inputs = {"user_message": "对所给文档进行分析，生成分析报告,文档名称为dataset.parquet", 
-          "plan": None,
-          "observations": [], 
-          "final_report": ""}
-
-graph.invoke(inputs, {"recursion_limit":100})
+if __name__ == "__main__":
+    inputs = {
+        "user_id": "demo_user",
+        "user_message": "对所给文档进行分析，生成分析报告,文档名称为dataset.parquet",
+        "plan": None,
+        "observations": [],
+        "final_report": "",
+    }
+    graph.invoke(inputs, {"recursion_limit": 100, "configurable": {"thread_id": "demo_user_thread"}})

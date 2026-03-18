@@ -19,8 +19,10 @@ class Plan(BaseModel):
     steps: List[Step] = []
 
 class State(MessagesState):
+    user_id: str = "default"
     user_message: str = ""
     plan: Plan
     observations: List = []
     final_report: str =  ""
+    memory_context: str = ""
     

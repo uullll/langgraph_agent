@@ -1,5 +1,0 @@
-Dataset Analysis Summary
-
-Rows: 649
-Columns: 33
-Missing values: 0
