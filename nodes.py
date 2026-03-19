@@ -261,8 +261,8 @@ def report_node(state: State):
                     )
                 )
                 
-            continue
-        else:
+            
+        
             pdf_files = sorted(WORKSPACE.glob("*.pdf"))
             if not pdf_files:
                 logger.warning("No PDF generated yet in workspace, ask model to continue.")
@@ -276,7 +276,9 @@ def report_node(state: State):
                     )
                 )
                 continue
-            break
+            else:
+                break
+            
         
 
     pdf_files = sorted(WORKSPACE.glob("*.pdf"))
