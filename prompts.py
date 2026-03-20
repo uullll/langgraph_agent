@@ -152,6 +152,9 @@ Select the most appropriate tool based on <user_message> and context to complete
 1. Must use Python for data processing and chart generation
 2. Charts default to TOP10 data unless otherwise specified
 3. Summarize results after completing <current_step> (Summarize only <current_step>, no additional content should be generated.)
+4. Generate a bar chart by default if there are no special requirements.
+7. The generated summary should be clearly labeled with the corresponding image file name.
+8. Font should use  Noto Sans CJK JP.
 </requirements>
 
 <additional_rules>
@@ -182,7 +185,9 @@ REPORT_SYSTEM_PROMPT = """
 You are a report generation expert. Based on the provided contextual information (including data, visualizations, and analytical results), 
 generate a high-value analytical report. The final deliverable should typically be a PDF file.
 </goal>
-
+<requirements>
+Font should use  Noto Sans CJK JP.
+</requirements>
 <style_guide>
 - Use tables and charts to present data clearly.
 - Do not describe every data point in the charts; focus only on statistically or practically significant findings.
@@ -196,4 +201,22 @@ generate a high-value analytical report. The final deliverable should typically 
 - First generate individual sub-reports, then merge them into a complete final report.
 - Present the final analytical report as a file.
 </attention>
+"""
+
+REPORT_EXECUTION_PROMPT = """
+<task>
+Generate the final report file for the user request below.
+</task>
+
+<requirements>
+1. You must create a real PDF file under workspace/ (for example `final_report.pdf`).
+2. Use tools to create intermediate markdown/html files and convert them to PDF if needed.
+3. After the PDF is created, respond with a short confirmation including the PDF filename.
+4. Do not output code blocks as the final answer; complete the file creation first.
+5. Font should use  Noto Sans CJK JP.
+</requirements>
+
+<user_message>
+{user_message}
+</user_message>
 """

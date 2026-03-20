@@ -40,7 +40,7 @@ graph = build_graph()
 if __name__ == "__main__":
     inputs = {
         "user_id": "demo_user",
-        "user_message": "对所给文档进行分析，生成分析报告,文档名称为dataset.parquet",
+        "user_message": "对所给文档进行分析，生成一份分析报告，需要用图表为结论证明，不需要分析太多内容，只需要分析成绩与什么正相关即可,文档名称为dataset.parquet",
         "plan": None,
         "observations": [],
         "final_report": "",

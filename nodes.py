@@ -235,7 +235,8 @@ def report_node(state: State):
     memory_context = state.get("memory_context") or get_state_memory_context(state)
     messages = observations + [
         SystemMessage(content=REPORT_SYSTEM_PROMPT),
-        HumanMessage(content=memory_context)
+        HumanMessage(content=memory_context),
+        HumanMessage(content=REPORT_EXECUTION_PROMPT.format(user_message=user_message))
     ]
     max_rounds = 8
     rounds = 0
@@ -270,14 +271,22 @@ def report_node(state: State):
                     HumanMessage(
                         content=(
                             "You have not created any .pdf file under workspace yet. "
-                            "Please continue and create a real PDF file (not txt/md) in workspace, "
-                            "then briefly report the file path."
+                            "You still have not created any .pdf file under workspace. "
+                            "Please call tools now to generate a real PDF and then provide the filename."
                         )
                     )
                 )
                 continue
-            else:
-                break
+            break
+
+        messages.append(
+            HumanMessage(
+                content=(
+                    "Your previous reply did not call any tool. "
+                    "Call tools to create the final PDF file in workspace before responding."
+                )
+            )
+        )
             
         
 
